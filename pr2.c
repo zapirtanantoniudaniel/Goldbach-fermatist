@@ -16,10 +16,8 @@ u mulm(u a, u b, u m) {
 
 u fact(u q, u p) {
 	u f = 1L;
-	for (u k = 0; k < q; k++) {
-		u l = k + 1;
-		f = mulm(f, l, p);
-	}
+	for (u k = 0; k < q; k++)
+		f = mulm(f, k + 1, p);
 	return f;
 }
 

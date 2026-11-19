@@ -18,7 +18,7 @@ int pr(u p) {
 
 int main(void) {
         u p = 2;
-        while (p < 0x3ffff) {
+        while (p < 0x7ffff) {
 		if (pr(p)) {
 			printf("%u\n", p);
 			fflush(stdout);

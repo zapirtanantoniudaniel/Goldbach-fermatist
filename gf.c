@@ -5,7 +5,7 @@
 #include <time.h>
 
 #define MIN (6)
-#define SIZE (43390 + 1)
+#define SIZE (1077871 + 1)
 #define EXPSIZE (27)
 #define SSIZE (1UL << EXPSIZE)
 
@@ -28,7 +28,7 @@ void inittab(void) {
 	u ix = 0;
 	u p = 2;
 	tabpr[ix++] = p;
-	while (p < 524288) {
+	while (p < (1ULL << 24)) {
 		p++;
 		if (small_pr(p))
 			tabpr[ix++] = p;
@@ -100,7 +100,7 @@ u gbn(u page) {
 int main(void) {
         u page = 0;
 	inittab();
-        while (page < 2048) {
+        while (page < (1UL << (48 - EXPSIZE))) {
 		if (!gbn(page))
 			exit(2);
 		printf("%luM\n", ((page + 1) * SSIZE) >> 20);

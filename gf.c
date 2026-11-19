@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,7 +6,8 @@
 
 #define MIN (6)
 #define SIZE (43390 + 1)
-#define SSIZE (1UL << 20)
+#define EXPSIZE (27)
+#define SSIZE (1UL << EXPSIZE)
 
 typedef unsigned long u;
 
@@ -53,50 +55,61 @@ int pr(u p) {
 void setsieve(u page) {
 	for (u i = 0; i < SSIZE; i++)
 		sieve[i] = 1;
+	if (page == 0) {
+		sieve[0] = 0;
+		sieve[1] = 0;
+	}
 	u p;
 	u minq = page * SSIZE;
 	u maxq = (page + 1) * SSIZE;
-	for (p = 2; p <= (maxq - 1) / p; p++)
+	for (p = 2; p <= (u) (sqrt((double) maxq)); p++)
 	if (pr(p)) {
 		u r;
 		if (p * p >= minq)
 			r = p * p;
 		else r = (minq - 1) / p + 1;
-		for (u s = r; s < maxq; s += p)
-			sieve[s] = 0;
+		for (u s = r * p; s < maxq; s += p)
+			sieve[s - page * SSIZE] = 0;
 	}
 }
 
 u gbn(u page) {
+	setsieve(page);
         u n = page * SSIZE;
 	while (n < (page + 1) * SSIZE) {
 		u p = 3;
-		while (p <= n - p) {
+		while (p <= 65536) {
 			if (small_pr(p)) {
 				u q = n - p;
 				if (q < page * SSIZE) {
 					if (pr(q))
-						return 1;
+						goto label;
 					}
 				else if (sieve[q - page * SSIZE])
-					return 1;
+					goto label;
 			}
 			p += 2;
 		}
+		return 0;
+		label:
+		n += 2;
 	}
-        return 0;
+        return 1;
 }
 
 int main(void) {
-        u page = 1;
-	u p = 7;
+        u page = 0;
 	inittab();
-        while (page < 0x1000) {
-		setsieve(page);
+        while (page < 2048) {
 		if (!gbn(page))
 			exit(2);
-		fprintf(stdout, "%luM\n", page + 1);
+		printf("%luM\n", ((page + 1) * SSIZE) >> 20);
 		fflush(stdout);
+		if ((page & 7) == 0) {
+			FILE *rec = fopen("record.txt", "w");
+			fprintf(rec, "%luG\n", ((page + 1) * SSIZE) >> 30);
+			fclose(rec);
+		}
                 page++;
         }
 }

@@ -1,9 +1,11 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 #define MIN (6)
-#define SIZE (43389 + 1)
+#define SIZE (43390 + 1)
+#define SSIZE (1UL << 20)
 
 typedef unsigned long u;
 
@@ -18,6 +20,7 @@ int small_pr(u p) {
 }
 
 u tabpr[SIZE];
+u sieve[SSIZE];
 
 void inittab(void) {
 	u ix = 0;
@@ -29,6 +32,8 @@ void inittab(void) {
 			tabpr[ix++] = p;
 	}
 	tabpr[ix++] = 0;
+	if (ix != SIZE)
+		exit(4);
 }
 
 int pr(u p) {
@@ -45,34 +50,54 @@ int pr(u p) {
 	return 1;
 }
 
-u gbn(u n) {
-        u p = 3;
-        while (p <= n - p) {
-                if (small_pr(p)) {
-                        if (pr(n - p))
-                                return p;
-                }
-		p += 2;
-        }
+void setsieve(u page) {
+	for (u i = 0; i < SSIZE; i++)
+		sieve[i] = 1;
+	u p;
+	u minq = page * SSIZE;
+	u maxq = (page + 1) * SSIZE;
+	for (p = 2; p <= (maxq - 1) / p; p++)
+	if (pr(p)) {
+		u r;
+		if (p * p >= minq)
+			r = p * p;
+		else r = (minq - 1) / p + 1;
+		for (u s = r; s < maxq; s += p)
+			sieve[s] = 0;
+	}
+}
+
+u gbn(u page) {
+        u n = page * SSIZE;
+	while (n < (page + 1) * SSIZE) {
+		u p = 3;
+		while (p <= n - p) {
+			if (small_pr(p)) {
+				u q = n - p;
+				if (q < page * SSIZE) {
+					if (pr(q))
+						return 1;
+					}
+				else if (sieve[q - page * SSIZE])
+					return 1;
+			}
+			p += 2;
+		}
+	}
         return 0;
 }
 
 int main(void) {
-        u n = MIN;
+        u page = 1;
 	u p = 7;
 	inittab();
-        while (n > 0) {
-		if (small_pr(p + 2))
-			p += 2;
-		else
-			p = gbn(n);
-                if (p == 0)
-                        exit(2);
-                if ((n & 131071) == 0) {
-                        fprintf(stdout, "%luk\n", n >> 10);
-                        fflush(stdout);
-                }
-                n += 2;
+        while (page < 0x1000) {
+		setsieve(page);
+		if (!gbn(page))
+			exit(2);
+		fprintf(stdout, "%luM\n", page + 1);
+		fflush(stdout);
+                page++;
         }
 }
 

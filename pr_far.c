@@ -42,7 +42,7 @@ int pr(u p) {
 }
 
 int main(void) {
-	for (u p = 2; p < 0x3ffff; p++) {
+	for (u p = 2; p < 0x7ffff; p++) {
 		int w = pr(p);
 		if (w == 1) {
 			printf("%u\n", p);

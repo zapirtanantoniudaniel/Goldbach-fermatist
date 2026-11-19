@@ -6,7 +6,7 @@
 
 #define MIN (6)
 #define SIZE (1077871 + 1)
-#define EXPSIZE (27)
+#define EXPSIZE (30)
 #define SSIZE (1UL << EXPSIZE)
 
 typedef unsigned long u;
@@ -22,7 +22,7 @@ int small_pr(u p) {
 }
 
 u tabpr[SIZE];
-u sieve[SSIZE];
+bool sieve[SSIZE];
 
 void inittab(void) {
 	u ix = 0;
@@ -54,10 +54,10 @@ int pr(u p) {
 
 void setsieve(u page) {
 	for (u i = 0; i < SSIZE; i++)
-		sieve[i] = 1;
+		sieve[i] = true;
 	if (page == 0) {
-		sieve[0] = 0;
-		sieve[1] = 0;
+		sieve[0] = false;
+		sieve[1] = false;
 	}
 	u p;
 	u minq = page * SSIZE;
@@ -69,7 +69,7 @@ void setsieve(u page) {
 			r = p * p;
 		else r = (minq - 1) / p + 1;
 		for (u s = r * p; s < maxq; s += p)
-			sieve[s - page * SSIZE] = 0;
+			sieve[s - page * SSIZE] = false;
 	}
 }
 
@@ -103,7 +103,7 @@ int main(void) {
         while (page < (1UL << (48 - EXPSIZE))) {
 		if (!gbn(page))
 			exit(2);
-		printf("%luM\n", ((page + 1) * SSIZE) >> 20);
+		printf("%lf\n", log((double) ((page + 1) * SSIZE)) / log(2.0));
 		fflush(stdout);
 		if ((page & 7) == 0) {
 			FILE *rec = fopen("record.txt", "w");

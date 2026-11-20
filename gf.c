@@ -98,12 +98,12 @@ u gbn(u page) {
 }
 
 int main(void) {
-        u page = 0;
+        u page = 512;
 	inittab();
         while (page < (1UL << (48 - EXPSIZE))) {
 		if (!gbn(page))
 			exit(2);
-		printf("%lf\n", log(log((double) ((page + 1) * SSIZE)) / log(2.0)) / log(2.0));
+		printf("%.17lf\n", log(log((double) ((page + 1) * SSIZE)) / log(2.0)) / log(2.0));
 		fflush(stdout);
 		if ((page & 7) == 0) {
 			FILE *rec = fopen("record.txt", "w");
